@@ -2,11 +2,8 @@
 Any potentially malicious content in this repository is for testing/educational purposes and should be approached with caution.
 
 
-XSYS-rat
-    / | \
-   /  |  \
-REMOTE|TROJAN
-   ACCESS
+XSYS-rat : (r)emote (a)ccess (t)rojan
+     
    
 This is a Remote Trojan program.
 this program devided by 2 Modules:
