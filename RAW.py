@@ -189,57 +189,49 @@ class RAW:
 		if(flag == 'encrypt-all'):
 			sorted_files = file_sort()
 			for f in sorted_files:
-			    if(os.path.basename(f).startswith(".(encrypted)")):			      
-			        return "<!> '{}' is already encrypted".format(str(f))
-
-			    elif(f == os.path.join(os.getcwd(), sys.argv[0])):
-			        pass        
-			    else:
-			        cls.encrypt(SHA256.new(key).digest(), str(f))
-			        os.remove()                                   
-			        return "<!> Done encrypting '{}'".format(str(f))
-	    
-		# encryption section (SINGLE FILE)
+				if(os.path.basename(f).startswith(".(encrypted)")):			      
+					return "<!> '{}' is already encrypted".format(str(f))
+				elif(f == os.path.join(os.getcwd(), sys.argv[0])):
+					pass        
+				else:
+					cls.encrypt(SHA256.new(key).digest(), str(f))
+					os.remove()                                   
+					return "<!> Done encrypting '{}'".format(str(f))
+		# encrypt 
 		elif(flag == 'encrypt'):
 			filename = raw_input(" Enter the filename to encrypt: ")
-		    if(not os.path.exists(filename)):
-		    	return "<!> The file '{}' does not exist".format(str(filename))
-		    	
-		    elif(filename.startswith(".(encrypted)")):
-		    	return "<!> '{}' is already encrypted".format(str(filename))
-			   			      
-		    else:
-		    	cls.encrypt(SHA256.new(key).digest(), str(filename))
-		    	os.remove()                                   
-		    	return "<!> Done encrypting '{}'".format(str(filename))
-	    
-	    # decryption section (ALL FILES)
-	    elif(flag == 'decrypt_all'):
-	    	sorted_files = file_sort()
+			if(not os.path.exists(filename)):
+				return "<!> The file '{}' does not exist".format(str(filename))
+
+			elif(filename.startswith(".(encrypted)")):
+				return "<!> '{}' is already encrypted".format(str(filename))		      
+			
+			else:
+				cls.encrypt(SHA256.new(key).digest(), str(filename))
+				os.remove()                                   
+				return "<!> Done encrypting '{}'".format(str(filename))
+		# decryption section (ALL FILES)
+		elif(flag == 'decrypt_all'):
+			sorted_files = file_sort()
 			for f in sorted_files:
-			    if(not os.path.basename(f).startswith(".(encrypted)")):			      
-			        return "<!> '{}' is already encrypted".format(str(f))
-
-			    elif(f == os.path.join(os.getcwd(), sys.argv[0])):
-			        pass        
-			    else:
-			        cls.encrypt(SHA256.new(key).digest(), str(f))
-			        os.remove()                                   
-			        return "<!> Done encrypting '{}'".format(str(f))
-
-	    # decryption section (SINGLE FILE)
-	    elif(flag == 'decrypt'):
-	    	filename = raw_input(" Enter the filename to decrypt: ")
-		    if(not os.path.exists(filename)):
-		    	return "<!> The file '{}' does not exist".format(str(filename))
-		    	
-		    elif(not filename.startswith(".(encrypted)")):
-		       	return "<!> '{}' is already not encrypted".format(str(filename))
-			   			      
-		    else:
-		       cls.decrypt(SHA256.new(password).digest(), filename)
-		       os.remove(filename)                            
-		       return "<!> Done decrypting '{}'".format(str(f))		       
-	    else:
-	    	print "<!> '{}' is not an option!".format(str(flag))
-
+				if(not os.path.basename(f).startswith(".(encrypted)")):			      
+					return "<!> '{}' is already encrypted".format(str(f))
+				elif(f == os.path.join(os.getcwd(), sys.argv[0])):
+					pass        
+				else:
+					cls.encrypt(SHA256.new(key).digest(), str(f))
+					os.remove()                                   
+					return "<!> Done encrypting '{}'".format(str(f))
+		# decryption section (SINGLE FILE)
+		elif(flag == 'decrypt'):
+			filename = raw_input(" Enter the filename to decrypt: ")
+			if(not os.path.exists(filename)):
+				return "<!> The file '{}' does not exist".format(str(filename))
+			elif(not filename.startswith(".(encrypted)")):
+				return "<!> '{}' is already not encrypted".format(str(filename))
+			else:
+				cls.decrypt(SHA256.new(password).digest(), filename)
+				os.remove(filename)                            
+				return "<!> Done decrypting '{}'".format(str(f))		       
+		else:
+			print "<!> '{}' is not an option!".format(str(flag))
