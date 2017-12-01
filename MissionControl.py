@@ -106,10 +106,15 @@
 ############################
 
 import os
-import sys
-import time
-import socket
-import platform
+try:
+	import sys
+	import time
+	import socket
+	import platform
+except ImportError as e:
+	pip = lambda : os.system('pip install' + str(e)[15:])
+	pip()
+
 
 class MC:
 
@@ -359,7 +364,6 @@ class MC:
 				#	any oter strings / commands
 				elif(nextCmd != ''):
 					cls.sendTo(cls.socks[choice], nextCmd)
-
 
 
 

