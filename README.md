@@ -20,7 +20,7 @@ RAT.py
 RAW.py
 - handled by RAT.py, this module handle all files encryption and decryption.
 - using the capabilities given by pycrypto libs to control the encryption and hashing algorithms,
-generally using AES.MODE_CBC as cipher and SHA256 to Hash a given KeyPrase
+generally using AES.MODE_CBC as cipher and SHA256 to Hash a given KeyPhrase
 
 MissionControl.py
 - runs on the attackers machine, postentialy enable to gain root access to each remote host connection. 
