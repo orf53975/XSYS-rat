@@ -8,9 +8,9 @@ XSYS-rat : (r)emote (a)ccess (t)rojan
 This is a Remote Trojan program.
 this program devided by 3 Modules:
 
-    * RAT.py              - CLIENT
-    * RAW.py              - CLIENT MODULE
-    * MissionControl.py   - MultiThread SERVER
+    * RAT.py              - Client App
+    * RAW.py              - Crypto Module (File Cryptography)
+    * MissionControl.py   - MunliThreaded Server App
 
 RAT.py
 - will sit on the target computer and try to maintain connection with the Server, while using a costomized socket using TCP connection protocol, to ensure all data delivary.
