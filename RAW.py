@@ -140,7 +140,6 @@ class RAW:
 		IV = ''
 		for i in range(16):
 			IV += chr(random.randint(0, 0xFF))
-
 		cls._ = AES.new(key, AES.MODE_CBC, IV)
 		with open(filename, 'rb') as i_file:
 			with open(out_file, 'wb') as o_file:
@@ -152,7 +151,6 @@ class RAW:
 						break
 					elif(len(chunk) % 16 != 0):
 						chunk += ' ' * (16 - (len(chunk) % 16))
-
 					o_file.write(cls._.encrypt(chunk))
 
 			
@@ -162,14 +160,12 @@ class RAW:
 		with open(filename, 'rb') as i_file:
 			file_size = i_file.read(16)
 			IV = i_file.read(16)
-
 		cls._ = AES.new(key, AES.MODE_CBC, IV)
 		with open(out_file, 'wb') as o_file:
 			while True:
 				chunk = i_file.read(cls._chunk)
 				if(len(chunk) == 0):
 					break
-
 				o_file.write(cls._.decrypt(chunk))
 			o_file.truncate(int(file_size))
 
@@ -180,13 +176,13 @@ class RAW:
 		for root, subfolders, files in os.walk(os.getcwd()):
 			for names in files:
 				all_files.append(os.path.join(root, names))
-
 		return all_files
+
 
 	# AES handler
 	def handler(cls, flag, key):
 		# encryption section (ALL FILES)
-		if(flag == 'encrypt-all'):
+		if(flag == 'encrypt_all'):
 			sorted_files = file_sort()
 			for f in sorted_files:
 				if(os.path.basename(f).startswith(".(encrypted)")):			      
@@ -202,10 +198,8 @@ class RAW:
 			filename = raw_input(" Enter the filename to encrypt: ")
 			if(not os.path.exists(filename)):
 				return "<!> The file '{}' does not exist".format(str(filename))
-
 			elif(filename.startswith(".(encrypted)")):
 				return "<!> '{}' is already encrypted".format(str(filename))		      
-			
 			else:
 				cls.encrypt(SHA256.new(key).digest(), str(filename))
 				os.remove()                                   
