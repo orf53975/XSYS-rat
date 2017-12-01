@@ -6,9 +6,10 @@ XSYS-rat : (r)emote (a)ccess (t)rojan
      
    
 This is a Remote Trojan program.
-this program devided by 2 Modules:
+this program devided by 3 Modules:
 
     * RAT.py              - CLIENT
+    * RAW.py              - CLIENT MODULE
     * MissionControl.py   - MultiThread SERVER
 
 RAT.py
@@ -16,6 +17,10 @@ RAT.py
 - support upload and download funcitions to proveide the Server with phisical data.
 - return full access to the machine Shell remotly.
 
+RAW.py
+- handled by RAT.py, this module handle all files encryption and decryption.
+- using the capabilities given by pycrypto libs to control the encryption and hashing algorithms,
+generally using AES.MODE_CBC as cipher and SHA256 to Hash a given KeyPrase
 
 MissionControl.py
 - runs on the attackers machine, postentialy enable to gain root access to each remote host connection. 
