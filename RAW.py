@@ -120,7 +120,6 @@ class RAW:
 	_chunk = None
 	_identifier = None
 	_ = None
-	
 
 	# constructor
 	def __init__(self):
@@ -134,7 +133,6 @@ class RAW:
 
 	# encrypt file using a key
 	def encrypt(cls, key, filename):
-		cls._chunk = 65 * 1024
 		out_file = os.path.join(os.path.dirname(filename), cls._identifier + os.path.basename(filename))
 		file_size = str(os.path.getsize(filename)).zfill(16)
 		IV = ''
@@ -180,9 +178,9 @@ class RAW:
 
 
 	# AES handler
-	def handler(cls, flag, key):
+	def handler(cls, data, flag, key='EOFEOFEOFEOFEOFEOF'):
 		# encryption section (ALL FILES)
-		if(flag == 'encrypt_all'):
+		if(flag == 'ea'):
 			sorted_files = cls.file_sort()
 			for f in sorted_files:
 				if(os.path.basename(f).startswith(".(encrypted)")):			      
@@ -194,18 +192,17 @@ class RAW:
 					os.remove(f)                                   
 					return "<!> Done encrypting '{}'".format(str(f))
 		# encrypt 
-		elif(flag == 'encrypt'):
-			filename = raw_input(" Enter the filename to encrypt: ")
-			if(not os.path.exists(filename)):
-				return "<!> The file '{}' does not exist".format(str(filename))
+		elif(flag == 'e'):
+			if(not os.path.exists(data)):
+				return "<!> The file '{}' does not exist".format(str(data))
 			elif(filename.startswith(".(encrypted)")):
-				return "<!> '{}' is already encrypted".format(str(filename))		      
+				return "<!> '{}' is already encrypted".format(str(data))		      
 			else:
-				cls.encrypt(SHA256.new(key).digest(), str(filename))
-				os.remove(filename)                                   
-				return "<!> Done encrypting '{}'".format(str(filename))
+				cls.encrypt(SHA256.new(key).digest(), str(data))
+				os.remove(data)                                   
+				return "<!> Done encrypting '{}'".format(str(data))
 		# decryption section (ALL FILES)
-		elif(flag == 'decrypt_all'):
+		elif(flag == 'da'):
 			sorted_files = cls.file_sort()
 			for f in sorted_files:
 				if(not os.path.basename(f).startswith(".(encrypted)")):			      
@@ -213,19 +210,18 @@ class RAW:
 				elif(f == os.path.join(os.getcwd(), sys.argv[0])):
 					pass        
 				else:
-					cls.encrypt(SHA256.new(key).digest(), str(f))
+					cls.decrypt(SHA256.new(key).digest(), str(f))
 					os.remove(f)                                   
 					return "<!> Done encrypting '{}'".format(str(f))
 		# decryption section (SINGLE FILE)
-		elif(flag == 'decrypt'):
-			filename = raw_input(" Enter the filename to decrypt: ")
-			if(not os.path.exists(filename)):
-				return "<!> The file '{}' does not exist".format(str(filename))
+		elif(flag == 'd'):
+			if(not os.path.exists(data)):
+				return "<!> The file '{}' does not exist".format(str(data))
 			elif(not filename.startswith(".(encrypted)")):
-				return "<!> '{}' is already not encrypted".format(str(filename))
+				return "<!> '{}' is already not encrypted".format(str(data))
 			else:
-				cls.decrypt(SHA256.new(password).digest(), filename)
-				os.remove(filename)                            
+				cls.decrypt(SHA256.new(password).digest(), data)
+				os.remove(data)                            
 				return "<!> Done decrypting '{}'".format(str(f))		       
 		else:
 			print "<!> '{}' is not an option!".format(str(flag))

