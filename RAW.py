@@ -183,7 +183,7 @@ class RAW:
 	def handler(cls, flag, key):
 		# encryption section (ALL FILES)
 		if(flag == 'encrypt_all'):
-			sorted_files = file_sort()
+			sorted_files = cls.file_sort()
 			for f in sorted_files:
 				if(os.path.basename(f).startswith(".(encrypted)")):			      
 					return "<!> '{}' is already encrypted".format(str(f))
@@ -191,7 +191,7 @@ class RAW:
 					pass        
 				else:
 					cls.encrypt(SHA256.new(key).digest(), str(f))
-					os.remove()                                   
+					os.remove(f)                                   
 					return "<!> Done encrypting '{}'".format(str(f))
 		# encrypt 
 		elif(flag == 'encrypt'):
@@ -202,11 +202,11 @@ class RAW:
 				return "<!> '{}' is already encrypted".format(str(filename))		      
 			else:
 				cls.encrypt(SHA256.new(key).digest(), str(filename))
-				os.remove()                                   
+				os.remove(filename)                                   
 				return "<!> Done encrypting '{}'".format(str(filename))
 		# decryption section (ALL FILES)
 		elif(flag == 'decrypt_all'):
-			sorted_files = file_sort()
+			sorted_files = cls.file_sort()
 			for f in sorted_files:
 				if(not os.path.basename(f).startswith(".(encrypted)")):			      
 					return "<!> '{}' is already encrypted".format(str(f))
@@ -214,7 +214,7 @@ class RAW:
 					pass        
 				else:
 					cls.encrypt(SHA256.new(key).digest(), str(f))
-					os.remove()                                   
+					os.remove(f)                                   
 					return "<!> Done encrypting '{}'".format(str(f))
 		# decryption section (SINGLE FILE)
 		elif(flag == 'decrypt'):
