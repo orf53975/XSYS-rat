@@ -111,6 +111,9 @@ try:
 	import time
 	import socket
 	import platform
+	import base64
+	from Crypto.Cipher import AES
+	from Crypto import Random
 except ImportError as e:
 	pip = lambda : os.system('pip install' + str(e)[15:])
 	pip()
