@@ -115,7 +115,7 @@ class Updater:
 	FreeDNS_URL = 'http://freedns.afraid.org/dynamic/update.php?'
 	IP_SOURCER = 'http://ip.dnsexit.com/'
 	OLDIP_FILE = os.getcwd() + '/ip.old'
-	USER_KEYS = ["ejUyTlZFd1NVMXVMU2RGZDEzS2d0YUd3OjE3MjI5NDIx", "", ""]
+	USER_KEYS = ["YOUR_FREEDNS_KEY", "", ""]
 
 
 	def __init__(self):

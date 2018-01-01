@@ -120,6 +120,7 @@ class RAW:
 	_chunk = None
 	_identifier = None
 	_ = None
+	BLOCK_SIZE = None
 
 	# constructor
 	def __init__(self):
@@ -130,15 +131,17 @@ class RAW:
 		cls._chunk = 65 * 1024
 		cls._identifier = ".(encrypted)"
 		cls._ = None
+		cls.BLOCK_SIZE = 16
 
 	# encrypt file using a key
 	def encrypt(cls, key, filename):
 		out_file = os.path.join(os.path.dirname(filename), cls._identifier + os.path.basename(filename))
-		file_size = str(os.path.getsize(filename)).zfill(16)
+		file_size = str(os.path.getsize(filename)).zfill(cls.BLOCK_SIZE)
 		IV = ''
-		for i in range(16):
+		for i in range(cls.BLOCK_SIZE):
 			IV += chr(random.randint(0, 0xFF))
 		cls._ = AES.new(key, AES.MODE_CBC, IV)
+		#cls._ = AES.new(key, AES.block_size, IV)
 		with open(filename, 'rb') as i_file:
 			with open(out_file, 'wb') as o_file:
 				o_file.write(filename)
@@ -147,25 +150,29 @@ class RAW:
 					chunk = i_file.read(cls._chunk)
 					if(len(chunk) == 0):
 						break
-					elif(len(chunk) % 16 != 0):
-						chunk += ' ' * (16 - (len(chunk) % 16))
+					elif(len(chunk) % cls.BLOCK_SIZE != 0):
+						chunk += ' ' * (cls.BLOCK_SIZE - (len(chunk) % cls.BLOCK_SIZE))
 					o_file.write(cls._.encrypt(chunk))
 
 			
 	# decrypt a file using a key
 	def decrypt(cls, key, filename):
 		out_file = os.path.join(os.path.dirname(filename), os.path.basename(filename[12:]))
-		with open(filename, 'rb') as i_file:
-			file_size = i_file.read(16)
-			IV = i_file.read(16)
+		with open(filename, 'rb') as o_file:
+			file_size = o_file.read(cls.BLOCK_SIZE)
+			IV = o_file.read(cls.BLOCK_SIZE)
 		cls._ = AES.new(key, AES.MODE_CBC, IV)
-		with open(out_file, 'wb') as o_file:
+		#cls._ = AES.new(key, AES.block_size, IV)
+		with open(out_file, 'wb') as i_file:
 			while True:
-				chunk = i_file.read(cls._chunk)
-				if(len(chunk) == 0):
-					break
-				o_file.write(cls._.decrypt(chunk))
-			o_file.truncate(int(file_size))
+				try:
+					chunk = i_file.read(cls._chunk)
+					if(len(chunk) == 0):
+						break
+					i_file.write(cls._.decrypt(chunk))
+				except Exception as e:
+					print (e)
+			i_file.truncate(int(file_size))
 
 
 	# sort files
@@ -178,7 +185,7 @@ class RAW:
 
 
 	# AES handler
-	def handler(cls, data, flag, key='EOFEOFEOFEOFEOFEOF'):
+	def handler(cls, data, flag, key='EOFEOFEOFEOFEOFX'):
 		# encryption section (ALL FILES)
 		if(flag == 'ea'):
 			sorted_files = cls.file_sort()
@@ -195,7 +202,7 @@ class RAW:
 		elif(flag == 'e'):
 			if(not os.path.exists(data)):
 				return "<!> The file '{}' does not exist".format(str(data))
-			elif(filename.startswith(".(encrypted)")):
+			elif(data.startswith(".(encrypted)")):
 				return "<!> '{}' is already encrypted".format(str(data))		      
 			else:
 				cls.encrypt(SHA256.new(key).digest(), str(data))
@@ -206,22 +213,22 @@ class RAW:
 			sorted_files = cls.file_sort()
 			for f in sorted_files:
 				if(not os.path.basename(f).startswith(".(encrypted)")):			      
-					return "<!> '{}' is already encrypted".format(str(f))
+					return "<!> Cannot decrypt : '{}' is not encrypted!".format(str(f))
 				elif(f == os.path.join(os.getcwd(), sys.argv[0])):
 					pass        
 				else:
 					cls.decrypt(SHA256.new(key).digest(), str(f))
-					os.remove(f)                                   
-					return "<!> Done encrypting '{}'".format(str(f))
+					os.remove(f)
+					return "<!> Done decrypting '{}'".format(str(f))
 		# decryption section (SINGLE FILE)
 		elif(flag == 'd'):
 			if(not os.path.exists(data)):
 				return "<!> The file '{}' does not exist".format(str(data))
-			elif(not filename.startswith(".(encrypted)")):
-				return "<!> '{}' is already not encrypted".format(str(data))
+			elif(not data.startswith(".(encrypted)")):
+				return "<!> Cannot decrypt : '{}' is not encrypted".format(str(data))
 			else:
-				cls.decrypt(SHA256.new(password).digest(), data)
+				cls.decrypt(SHA256.new(key).digest(), data)
 				os.remove(data)                            
-				return "<!> Done decrypting '{}'".format(str(f))		       
+				return "<!> Done decrypting '{}'".format(str(data))
 		else:
 			print "<!> '{}' is not an option!".format(str(flag))
