@@ -106,7 +106,8 @@ try:
 	import urllib2
 	import pip	
 except ImportError as e:
-	pip = lambda : os.system('pip install ' + str(e)[15:])
+	#pip = lambda : os.system('pip install ' + str(e)[15:])
+	pip =  lambda : pip.main(['install', str(e)[15:]])
 	pip()
 
 
@@ -115,7 +116,7 @@ class Updater:
 	FreeDNS_URL = 'http://freedns.afraid.org/dynamic/update.php?'
 	IP_SOURCER = 'http://ip.dnsexit.com/'
 	OLDIP_FILE = os.getcwd() + '/ip.old'
-	USER_KEYS = ["YOUR_FREEDNS_KEY", "", ""]
+	USER_KEYS = ["ejUyTlZFd1NVMXVMU2RGZDEzS2d0YUd3OjE3MjI5NDIx", "", ""]
 
 
 	def __init__(self):

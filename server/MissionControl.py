@@ -115,7 +115,8 @@ try:
 	from Crypto.Cipher import AES
 	from Crypto import Random
 except ImportError as e:
-	pip = lambda : os.system('pip install' + str(e)[15:])
+	#pip = lambda : os.system('pip install' + str(e)[15:])
+	pip =  lambda : pip.main(['install', str(e)[15:]])
 	pip()
 
 
@@ -150,7 +151,8 @@ class MC:
 		# set looper to receive all connections
 		cls._looper_host = "0.0.0.0"
 		# set the port
-		cls._port = 4434
+		#cls._port = 4434
+		cls._port = 8080
 		# bind connections
 		cls.bind_and_listen()
 		# connect

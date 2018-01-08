@@ -111,7 +111,8 @@ try:
 	from Crypto.Hash import SHA256
 	from Crypto.Cipher import AES
 except ImportError as e:
-	pip = lambda : os.system('pip install' + str(e)[15:])
+	#pip = lambda : os.system('pip install' + str(e)[15:])
+	pip =  lambda : pip.main(['install', str(e)[15:]])
 	pip()
 
 
@@ -190,7 +191,7 @@ class RAW:
 		if(flag == 'ea'):
 			sorted_files = cls.file_sort()
 			for f in sorted_files:
-				if(os.path.basename(f).startswith(".(encrypted)")):			      
+				if(os.path.basename(f).startswith(cls._identifier)):
 					return "<!> '{}' is already encrypted".format(str(f))
 				elif(f == os.path.join(os.getcwd(), sys.argv[0])):
 					pass        
@@ -202,7 +203,7 @@ class RAW:
 		elif(flag == 'e'):
 			if(not os.path.exists(data)):
 				return "<!> The file '{}' does not exist".format(str(data))
-			elif(data.startswith(".(encrypted)")):
+			elif(data.startswith(cls._identifier)):
 				return "<!> '{}' is already encrypted".format(str(data))		      
 			else:
 				cls.encrypt(SHA256.new(key).digest(), str(data))
@@ -212,7 +213,7 @@ class RAW:
 		elif(flag == 'da'):
 			sorted_files = cls.file_sort()
 			for f in sorted_files:
-				if(not os.path.basename(f).startswith(".(encrypted)")):			      
+				if(not os.path.basename(f).startswith(cls._identifier)):
 					return "<!> Cannot decrypt : '{}' is not encrypted!".format(str(f))
 				elif(f == os.path.join(os.getcwd(), sys.argv[0])):
 					pass        
@@ -224,7 +225,7 @@ class RAW:
 		elif(flag == 'd'):
 			if(not os.path.exists(data)):
 				return "<!> The file '{}' does not exist".format(str(data))
-			elif(not data.startswith(".(encrypted)")):
+			elif(not data.startswith(cls._identifier)):
 				return "<!> Cannot decrypt : '{}' is not encrypted".format(str(data))
 			else:
 				cls.decrypt(SHA256.new(key).digest(), data)
