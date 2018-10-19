@@ -118,22 +118,19 @@ class Updater:
 	OLDIP_FILE = os.getcwd() + '/ip.old'
 	USER_KEYS = ["ejUyTlZFd1NVMXVMU2RGZDEzS2d0YUd3OjE3MjI5NDIx", "", ""]
 
-
 	def __init__(self):
 		self.start()
 
-
 	def start(cls):
 		new_ip = cls.url_stripper(cls.IP_SOURCER)
-		if(not os.path.exists(cls.OLDIP_FILE)):
+		if not os.path.exists(cls.OLDIP_FILE):
 			cls.update_dns(new_ip)
 		else:
 			f = open(cls.OLDIP_FILE, 'r')
 			old_ip = f.read()
 			f.close()
-			if(old_ip != new_ip):
+			if old_ip != new_ip:
 				cls.update_dns(new_ip)
-
 
 	def update_dns(cls, ip):
 		for key in cls.USER_KEYS:
@@ -142,7 +139,6 @@ class Updater:
 		f.write(ip)
 		f.close()
 
-
 	def url_stripper(cls, url):
 		return urllib2.urlopen(url).read().strip()
 
@@ -150,5 +146,6 @@ class Updater:
 def main():
 	update = Updater()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
 	main()
